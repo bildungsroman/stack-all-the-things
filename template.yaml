@@ -331,6 +331,7 @@ Resources:
       Tracing: Active
       Policies:
         - AWSXrayWriteOnlyAccess
+        - AWSLambdaENIManagementAccess
       Events:
         timerEB0BC029:
           Type: Schedule
@@ -338,6 +339,12 @@ Resources:
             Schedule: rate(365 days)
           Metadata:
             StackeryName: timesUp
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt virtualNetworkE697BE82.DefaultSecurityGroup
+        SubnetIds:
+          - !Ref virtualNetworkE697BE82PrivateSubnet1
+          - !Ref virtualNetworkE697BE82PrivateSubnet2
     Metadata:
       StackeryName: moarFunctions
   functionECD3A4E8:
@@ -413,6 +420,227 @@ Resources:
             RestApiId: !Ref api9B06B464
     Metadata:
       StackeryName: getTheThings
+  virtualNetworkE697BE82:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Virtual Network ${ResourceName}
+            - ResourceName: iWillCauseProblems
+    Metadata:
+      StackeryName: iWillCauseProblems
+  virtualNetworkE697BE82PrivateSubnet1:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+      CidrBlock: !Select
+        - 0
+        - !Cidr
+          - 10.0.0.0/16
+          - 4
+          - 14
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Virtual Network ${ResourceName} Private Subnet 1
+            - ResourceName: iWillCauseProblems
+      VpcId: !Ref virtualNetworkE697BE82
+  virtualNetworkE697BE82PrivateSubnet2:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs ''
+      CidrBlock: !Select
+        - 1
+        - !Cidr
+          - 10.0.0.0/16
+          - 4
+          - 14
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Virtual Network ${ResourceName} Private Subnet 2
+            - ResourceName: iWillCauseProblems
+      VpcId: !Ref virtualNetworkE697BE82
+  virtualNetworkE697BE82PublicSubnet1:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ''
+      CidrBlock: !Select
+        - 2
+        - !Cidr
+          - 10.0.0.0/16
+          - 4
+          - 14
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Virtual Network ${ResourceName} Public Subnet 1
+            - ResourceName: iWillCauseProblems
+      VpcId: !Ref virtualNetworkE697BE82
+  virtualNetworkE697BE82PublicSubnet2:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs ''
+      CidrBlock: !Select
+        - 3
+        - !Cidr
+          - 10.0.0.0/16
+          - 4
+          - 14
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Virtual Network ${ResourceName} Public Subnet 2
+            - ResourceName: iWillCauseProblems
+      VpcId: !Ref virtualNetworkE697BE82
+  virtualNetworkE697BE82PrivateSubnet1NatGatewayEIP:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  virtualNetworkE697BE82PrivateSubnet1NatGateway:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt virtualNetworkE697BE82PrivateSubnet1NatGatewayEIP.AllocationId
+      SubnetId: !Ref virtualNetworkE697BE82PublicSubnet1
+  virtualNetworkE697BE82PrivateSubnet1RouteTable:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Virtual Network ${ResourceName} Private Subnet 1 Route Table
+            - ResourceName: iWillCauseProblems
+      VpcId: !Ref virtualNetworkE697BE82
+  virtualNetworkE697BE82PrivateSubnet1NatGatewayRoute:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref virtualNetworkE697BE82PrivateSubnet1NatGateway
+      RouteTableId: !Ref virtualNetworkE697BE82PrivateSubnet1RouteTable
+  virtualNetworkE697BE82PrivateSubnet1RouteTableAssociation:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref virtualNetworkE697BE82PrivateSubnet1RouteTable
+      SubnetId: !Ref virtualNetworkE697BE82PrivateSubnet1
+  virtualNetworkE697BE82PrivateSubnet2NatGatewayEIP:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  virtualNetworkE697BE82PrivateSubnet2NatGateway:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt virtualNetworkE697BE82PrivateSubnet2NatGatewayEIP.AllocationId
+      SubnetId: !Ref virtualNetworkE697BE82PublicSubnet2
+  virtualNetworkE697BE82PrivateSubnet2RouteTable:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Virtual Network ${ResourceName} Private Subnet 2 Route Table
+            - ResourceName: iWillCauseProblems
+      VpcId: !Ref virtualNetworkE697BE82
+  virtualNetworkE697BE82PrivateSubnet2NatGatewayRoute:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref virtualNetworkE697BE82PrivateSubnet2NatGateway
+      RouteTableId: !Ref virtualNetworkE697BE82PrivateSubnet2RouteTable
+  virtualNetworkE697BE82PrivateSubnet2RouteTableAssociation:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref virtualNetworkE697BE82PrivateSubnet2RouteTable
+      SubnetId: !Ref virtualNetworkE697BE82PrivateSubnet2
+  virtualNetworkE697BE82PublicSubnetsInternetGateway:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Virtual Network ${ResourceName} Public Subnets Internet Gateway
+            - ResourceName: iWillCauseProblems
+  virtualNetworkE697BE82PublicSubnetsInternetGatewayAttachment:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref virtualNetworkE697BE82PublicSubnetsInternetGateway
+      VpcId: !Ref virtualNetworkE697BE82
+  virtualNetworkE697BE82PublicSubnetsRouteTable:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Virtual Network ${ResourceName} Public Subnets Route Table
+            - ResourceName: iWillCauseProblems
+      VpcId: !Ref virtualNetworkE697BE82
+  virtualNetworkE697BE82PublicSubnetsInternetGatewayRoute:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref virtualNetworkE697BE82PublicSubnetsInternetGateway
+      RouteTableId: !Ref virtualNetworkE697BE82PublicSubnetsRouteTable
+  virtualNetworkE697BE82PublicSubnet1RouteTableAssociation:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref virtualNetworkE697BE82PublicSubnetsRouteTable
+      SubnetId: !Ref virtualNetworkE697BE82PublicSubnet1
+  virtualNetworkE697BE82PublicSubnet2RouteTableAssociation:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref virtualNetworkE697BE82PublicSubnetsRouteTable
+      SubnetId: !Ref virtualNetworkE697BE82PublicSubnet2
 Parameters:
   StackeryStackTagName:
     Type: String
