@@ -308,6 +308,47 @@ Resources:
             - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Database ${ResourceName} VPC Security Group
             - ResourceName: databaseF50FCBBC
       VpcId: !Ref DefaultVPCId
+  queue29EA3919:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${AWS::StackName}-queue29EA3919
+      KmsMasterKeyId: alias/aws/sqs
+  topic43B499AD:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${AWS::StackName}-topic43B499AD
+  stream61080143:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: !Sub ${AWS::StackName}-stream61080143
+      ShardCount: 1
+      StreamEncryption:
+        EncryptionType: KMS
+        KeyId: alias/aws/kinesis
+  functionD4FE0748:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-functionD4FE0748
+      Description: !Sub
+        - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Function ${ResourceName}
+        - ResourceName: moarFunctions
+      CodeUri: src/moarFunctions
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+      Events:
+        timerEB0BC029:
+          Type: Schedule
+          Properties:
+            Schedule: rate(365 days)
+          Metadata:
+            StackeryName: timesUp
+    Metadata:
+      StackeryName: moarFunctions
 Parameters:
   StackeryStackTagName:
     Type: String
