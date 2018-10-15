@@ -315,6 +315,8 @@ Resources:
     Properties:
       QueueName: !Sub ${AWS::StackName}-queue29EA3919
       KmsMasterKeyId: alias/aws/sqs
+    Metadata:
+      StackeryName: iNameUQ
   topic43B499AD:
     Type: AWS::SNS::Topic
     Properties:
@@ -379,6 +381,27 @@ Resources:
           Type: SNS
           Properties:
             Topic: !Ref topic43B499AD
+  functionC6290DFC:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-functionC6290DFC
+      Description: !Sub
+        - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Function ${ResourceName}
+        - ResourceName: functionC6290DFC
+      CodeUri: src/functionC6290DFC
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+      Events:
+        queue29EA3919:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt queue29EA3919.Arn
+            BatchSize: 1
 Parameters:
   StackeryStackTagName:
     Type: String
