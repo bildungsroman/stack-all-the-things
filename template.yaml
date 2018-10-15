@@ -31,19 +31,11 @@ Resources:
         info: {}
         paths:
           /:
-            '*':
-              responses: {}
-          /{id}:
             get:
-              responses: {}
-          /{id}/post:
-            post:
-              responses: {}
-          /{id}/put:
-            put:
-              responses: {}
-          /{id}/delete:
-            delete:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${function3A959F50.Arn}/invocations
               responses: {}
       EndpointConfiguration: REGIONAL
     Metadata:
@@ -390,6 +382,30 @@ Resources:
           Properties:
             Queue: !GetAtt queue29EA3919.Arn
             BatchSize: 1
+  function3A959F50:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-function3A959F50
+      Description: !Sub
+        - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Function ${ResourceName}
+        - ResourceName: getTheThings
+      CodeUri: src/getTheThings
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+      Events:
+        api9B06B464:
+          Type: Api
+          Properties:
+            Path: /
+            Method: GET
+            RestApiId: !Ref api9B06B464
+    Metadata:
+      StackeryName: getTheThings
 Parameters:
   StackeryStackTagName:
     Type: String
