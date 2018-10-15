@@ -16,13 +16,6 @@ Resources:
       Tracing: Active
       Policies:
         - AWSXrayWriteOnlyAccess
-      Events:
-        api9B06B464:
-          Type: Api
-          Properties:
-            Path: /
-            Method: GET
-            RestApiId: !Ref api9B06B464
       Environment: {}
     Metadata:
       StackeryName: getAllTheThings
