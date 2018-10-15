@@ -60,6 +60,8 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub ${AWS::StackName}-objectstorebb958252
+    Metadata:
+      StackeryName: essThree
   function13DB8388:
     Type: AWS::Serverless::Function
     Properties:
@@ -239,6 +241,8 @@ Resources:
             Id: StackeryCDN
             S3OriginConfig:
               OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${cdn9E4E6EFAOriginAccessIdentity}
+    Metadata:
+      StackeryName: distributeItAll
   cdn9E4E6EFAOriginAccessIdentity:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
     Properties:
