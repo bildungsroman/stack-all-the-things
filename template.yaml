@@ -124,7 +124,7 @@ Resources:
     Type: AWS::AppSync::Resolver
     Properties:
       TypeName: Query
-      DataSourceName: !GetAtt graphql58E2566TohttpProxy91146268DataSource.Name
+      DataSourceName: !GetAtt graphql58E2566LocalDataSource.Name
       RequestMappingTemplateS3Location: graphql58E2566/Query-getPost-request.vm
       ResponseMappingTemplateS3Location: graphql58E2566/Query-getPost-response.vm
       ApiId: !GetAtt graphql58E2566.ApiId
@@ -160,14 +160,6 @@ Resources:
       ApiId: !GetAtt graphql58E2566.ApiId
       FieldName: version
     DependsOn: graphql58E2566Schema
-  graphql58E2566TohttpProxy91146268DataSource:
-    Type: AWS::AppSync::DataSource
-    Properties:
-      Type: HTTP
-      ApiId: !GetAtt graphql58E2566.ApiId
-      Name: https___stackery_io
-      HttpConfig:
-        Endpoint: https://stackery.io
   tableDE11F4FE:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -406,6 +398,12 @@ Resources:
           Properties:
             Queue: !GetAtt queue29EA3919.Arn
             BatchSize: 1
+  graphql58E2566LocalDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      Type: NONE
+      ApiId: !GetAtt graphql58E2566.ApiId
+      Name: Local
 Parameters:
   StackeryStackTagName:
     Type: String
