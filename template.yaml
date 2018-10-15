@@ -1,3 +1,77 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Transform: 'AWS::Serverless-2016-10-31'
-Resources: {}
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  functionE833292D:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-functionE833292D
+      Description: !Sub
+        - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Function ${ResourceName}
+        - ResourceName: getAllTheThings
+      CodeUri: src/getAllTheThings
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+        - S3CrudPolicy:
+            BucketName: !Ref objectStoreBB958252
+      Events:
+        api9B06B464:
+          Type: Api
+          Properties:
+            Path: /
+            Method: GET
+            RestApiId: !Ref api9B06B464
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref objectStoreBB958252
+          BUCKET_ARN: !GetAtt objectStoreBB958252.Arn
+    Metadata:
+      StackeryName: getAllTheThings
+  api9B06B464:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub
+        - ${ResourceName} From Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName}
+        - ResourceName: myApi
+      StageName: !Ref StackeryEnvironmentAPIGatewayStageName
+      DefinitionBody:
+        swagger: '2.0'
+        info: {}
+        paths:
+          /:
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${functionE833292D.Arn}/invocations
+              responses: {}
+          /post:
+            post:
+              responses: {}
+          /add:
+            put:
+              responses: {}
+          /delete:
+            delete:
+              responses: {}
+      EndpointConfiguration: REGIONAL
+    Metadata:
+      StackeryName: myApi
+  objectStoreBB958252:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-objectstorebb958252
+Parameters:
+  StackeryStackTagName:
+    Type: String
+    Description: Stack Name (injected by Stackery at deployment time)
+  StackeryEnvironmentTagName:
+    Type: String
+    Description: Environment Name (injected by Stackery at deployment time)
+  StackeryEnvironmentAPIGatewayStageName:
+    Type: String
+    Description: Environment name used for API Gateway Stage names (injected by Stackery at deployment time)
