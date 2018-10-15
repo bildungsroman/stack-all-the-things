@@ -164,6 +164,8 @@ Resources:
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
       TableName: !Sub ${AWS::StackName}-tableDE11F4FE
+    Metadata:
+      StackeryName: dynamo-iiiiite
   graphql58E2566TotableDE11F4FEDataSource:
     Type: AWS::AppSync::DataSource
     Properties:
