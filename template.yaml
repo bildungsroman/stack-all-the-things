@@ -349,6 +349,34 @@ Resources:
             StackeryName: timesUp
     Metadata:
       StackeryName: moarFunctions
+  functionECD3A4E8:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-functionECD3A4E8
+      Description: !Sub
+        - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Function ${ResourceName}
+        - ResourceName: functionECD3A4E8
+      CodeUri: src/functionECD3A4E8
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+        - KinesisCrudPolicy:
+            StreamName: !Ref stream61080143
+        - KinesisStreamReadPolicy:
+            StreamName: !Ref stream61080143
+      Environment:
+        Variables:
+          STREAM_NAME: !Ref stream61080143
+          STREAM_ARN: !GetAtt stream61080143.Arn
+      Events:
+        topic43B499AD:
+          Type: SNS
+          Properties:
+            Topic: !Ref topic43B499AD
 Parameters:
   StackeryStackTagName:
     Type: String
