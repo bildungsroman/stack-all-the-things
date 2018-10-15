@@ -124,7 +124,7 @@ Resources:
     Type: AWS::AppSync::Resolver
     Properties:
       TypeName: Query
-      DataSourceName: !GetAtt graphql58E2566LocalDataSource.Name
+      DataSourceName: !GetAtt graphql58E2566TotableDE11F4FEDataSource.Name
       RequestMappingTemplateS3Location: graphql58E2566/Query-getPost-request.vm
       ResponseMappingTemplateS3Location: graphql58E2566/Query-getPost-response.vm
       ApiId: !GetAtt graphql58E2566.ApiId
@@ -398,12 +398,6 @@ Resources:
           Properties:
             Queue: !GetAtt queue29EA3919.Arn
             BatchSize: 1
-  graphql58E2566LocalDataSource:
-    Type: AWS::AppSync::DataSource
-    Properties:
-      Type: NONE
-      ApiId: !GetAtt graphql58E2566.ApiId
-      Name: Local
 Parameters:
   StackeryStackTagName:
     Type: String
