@@ -31,19 +31,18 @@ Resources:
         info: {}
         paths:
           /:
-            get:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${functionE833292D.Arn}/invocations
+            '*':
               responses: {}
-          /post:
+          /{id}:
+            get:
+              responses: {}
+          /{id}/post:
             post:
               responses: {}
-          /add:
+          /{id}/put:
             put:
               responses: {}
-          /delete:
+          /{id}/delete:
             delete:
               responses: {}
       EndpointConfiguration: REGIONAL
