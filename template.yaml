@@ -123,6 +123,108 @@ Resources:
                 Resource:
                   - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/appsync/apis/*
                   - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/appsync/apis/*:log-stream:*
+  graphql58E2566QuerygetPostResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Query
+      DataSourceName: !GetAtt graphql58E2566TohttpProxy91146268DataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Query-getPost-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Query-getPost-response.vm
+      ApiId: !GetAtt graphql58E2566.ApiId
+      FieldName: getPost
+    DependsOn: graphql58E2566Schema
+  graphql58E2566MutationaddPostResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Mutation
+      DataSourceName: !GetAtt graphql58E2566TotableDE11F4FEDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Mutation-addPost-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Mutation-addPost-response.vm
+      ApiId: !GetAtt graphql58E2566.ApiId
+      FieldName: addPost
+    DependsOn: graphql58E2566Schema
+  graphql58E2566PostidResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Post
+      DataSourceName: !GetAtt graphql58E2566TotableDE11F4FEDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Post-id-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Post-id-response.vm
+      ApiId: !GetAtt graphql58E2566.ApiId
+      FieldName: id
+    DependsOn: graphql58E2566Schema
+  graphql58E2566PostversionResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Post
+      DataSourceName: !GetAtt graphql58E2566TotableDE11F4FEDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Post-version-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Post-version-response.vm
+      ApiId: !GetAtt graphql58E2566.ApiId
+      FieldName: version
+    DependsOn: graphql58E2566Schema
+  graphql58E2566TohttpProxy91146268DataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      Type: HTTP
+      ApiId: !GetAtt graphql58E2566.ApiId
+      Name: https___api_example_com
+      HttpConfig:
+        Endpoint: https://api.example.com
+  tableDE11F4FE:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      TableName: !Sub ${AWS::StackName}-tableDE11F4FE
+  graphql58E2566TotableDE11F4FEDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      Type: AMAZON_DYNAMODB
+      ServiceRoleArn: !GetAtt graphql58E2566TotableDE11F4FEAccessRole.Arn
+      ApiId: !GetAtt graphql58E2566.ApiId
+      Name: tableDE11F4FE
+      DynamoDBConfig:
+        TableName: !Ref tableDE11F4FE
+        AwsRegion: !Ref AWS::Region
+  graphql58E2566TotableDE11F4FEAccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: appsync.amazonaws.com
+          Action: sts:AssumeRole
+      RoleName: !Sub ${AWS::StackName}-graphql58E2566-to-tableDE11F4FE
+      Policies:
+        - PolicyName: Access
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:BatchGetItem
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !GetAtt tableDE11F4FE.Arn
+                  - !Sub ${tableDE11F4FE.Arn}/index/*
 Parameters:
   StackeryStackTagName:
     Type: String
