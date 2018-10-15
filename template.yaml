@@ -165,9 +165,9 @@ Resources:
     Properties:
       Type: HTTP
       ApiId: !GetAtt graphql58E2566.ApiId
-      Name: https___api_example_com
+      Name: https___stackery_io
       HttpConfig:
-        Endpoint: https://api.example.com
+        Endpoint: https://stackery.io
   tableDE11F4FE:
     Type: AWS::DynamoDB::Table
     Properties:
