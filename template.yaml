@@ -224,6 +224,15 @@ Resources:
             Id: StackeryCDN
             S3OriginConfig:
               OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${cdn9E4E6EFAOriginAccessIdentity}
+        Aliases: !If
+          - cdn9E4E6EFACustomDomain
+          - - example.com
+          - !Ref AWS::NoValue
+        ViewerCertificate: !If
+          - cdn9E4E6EFACustomDomain
+          - AcmCertificateArn: !Ref cdn9E4E6EFASSLCertificate
+            SslSupportMethod: sni-only
+          - !Ref AWS::NoValue
     Metadata:
       StackeryName: distributeItAll
   cdn9E4E6EFAOriginAccessIdentity:
@@ -816,6 +825,15 @@ Resources:
 
             --==BOUNDARY==
           - SSHKeys: '{"<username1>":"<public key>","<username2>":"<public key>"}'
+  cdn9E4E6EFASSLCertificate:
+    Type: Custom::StackeryUsEast1SSLCertificate
+    Properties:
+      ServiceToken: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:stackery-agent-commander
+      DomainName: example.com
+      DomainValidationOptions:
+        - DomainName: example.com
+          ValidationDomain: example.com
+    Condition: cdn9E4E6EFACustomDomain
 Parameters:
   StackeryStackTagName:
     Type: String
@@ -838,3 +856,8 @@ Parameters:
 Metadata:
   StackeryErrorsTargets:
     function13DB8388: {}
+Conditions:
+  cdn9E4E6EFACustomDomain: !Not
+    - !Equals
+      - 'false'
+      - example.com
