@@ -367,6 +367,9 @@ Resources:
             QueryString: false
           TargetOriginId: StackeryCDN
           ViewerProtocolPolicy: redirect-to-https
+          LambdaFunctionAssociations:
+            - EventType: viewer-response
+              LambdaFunctionARN: !GetAtt edgeFunction9CD55C39.VersionArn
         Enabled: true
         PriceClass: PriceClass_100
         Origins:
@@ -394,6 +397,39 @@ Resources:
             Resource: !Sub
               - ${BucketArn}/*
               - BucketArn: !GetAtt objectStoreBB958252.Arn
+  edgeFunction9CD55C39:
+    Type: Custom::StackeryEdgeFunction
+    Properties:
+      ServiceToken: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:stackery-agent-commander
+      FunctionName: !Sub ${AWS::StackName}-edgeFunction9CD55C39
+      Description: !Sub
+        - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Function ${ResourceName}
+        - ResourceName: livinOnTheEdge
+      Runtime: nodejs8.10
+      CodeUri: src/edgeFunction9CD55C39
+      Handler: index.handler
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Role: !GetAtt edgeFunction9CD55C39Role.Arn
+    Metadata:
+      StackeryName: livinOnTheEdge
+  edgeFunction9CD55C39Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-edgeFunction9CD55C39
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service:
+              - lambda.amazonaws.com
+              - edgelambda.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
 Parameters:
   StackeryStackTagName:
     Type: String
