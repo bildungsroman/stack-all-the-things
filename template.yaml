@@ -430,6 +430,72 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+  graphql58E2566PostauthorResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Post
+      DataSourceName: !GetAtt graphql58E2566TotableDE11F4FEDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Post-author-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Post-author-response.vm
+      ApiId: !GetAtt graphql58E2566.ApiId
+      FieldName: author
+    DependsOn: graphql58E2566Schema
+  graphql58E2566LocalDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      Type: NONE
+      ApiId: !GetAtt graphql58E2566.ApiId
+      Name: Local
+  graphql58E2566PosttitleResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Post
+      DataSourceName: !GetAtt graphql58E2566LocalDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Post-title-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Post-title-response.vm
+      ApiId: !GetAtt graphql58E2566.ApiId
+      FieldName: title
+    DependsOn: graphql58E2566Schema
+  graphql58E2566PostcontentResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Post
+      DataSourceName: !GetAtt graphql58E2566TotableDE11F4FEDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Post-content-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Post-content-response.vm
+      ApiId: !GetAtt graphql58E2566.ApiId
+      FieldName: content
+    DependsOn: graphql58E2566Schema
+  graphql58E2566PosturlResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Post
+      DataSourceName: !GetAtt graphql58E2566LocalDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Post-url-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Post-url-response.vm
+      ApiId: !GetAtt graphql58E2566.ApiId
+      FieldName: url
+    DependsOn: graphql58E2566Schema
+  graphql58E2566PostupsResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Post
+      DataSourceName: !GetAtt graphql58E2566TotableDE11F4FEDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Post-ups-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Post-ups-response.vm
+      ApiId: !GetAtt graphql58E2566.ApiId
+      FieldName: ups
+    DependsOn: graphql58E2566Schema
+  graphql58E2566PostdownsResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Post
+      DataSourceName: !GetAtt graphql58E2566TotableDE11F4FEDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Post-downs-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Post-downs-response.vm
+      ApiId: !GetAtt graphql58E2566.ApiId
+      FieldName: downs
+    DependsOn: graphql58E2566Schema
 Parameters:
   StackeryStackTagName:
     Type: String
