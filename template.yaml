@@ -16,12 +16,7 @@ Resources:
       Tracing: Active
       Policies:
         - AWSXrayWriteOnlyAccess
-      Environment:
-        Variables:
-          DB_INSTANCE: !Ref databaseF50FCBBC
-          DB_ADDRESS: !GetAtt databaseF50FCBBC.Endpoint.Address
-          DB_PORT: !GetAtt databaseF50FCBBC.Endpoint.Port
-          DB_ARN: !Sub arn:aws:rds:${AWS::Region}:${AWS::AccountId}:db:${databaseF50FCBBC}
+      Environment: {}
     Metadata:
       StackeryName: getAllTheThings
   api9B06B464:
@@ -205,59 +200,6 @@ Resources:
                 Resource:
                   - !GetAtt tableDE11F4FE.Arn
                   - !Sub ${tableDE11F4FE.Arn}/index/*
-  databaseF50FCBBC:
-    Type: AWS::RDS::DBInstance
-    Properties:
-      AllocatedStorage: '5'
-      AllowMajorVersionUpgrade: true
-      AutoMinorVersionUpgrade: true
-      BackupRetentionPeriod: '1'
-      CopyTagsToSnapshot: true
-      DBInstanceClass: db.t2.micro
-      DBSubnetGroupName: !Ref databaseF50FCBBCSubnetGroup
-      Engine: mysql
-      EngineVersion: '5.7'
-      MasterUsername: root
-      MasterUserPassword: mypassword
-      MultiAZ: false
-      PubliclyAccessible: true
-      StorageType: gp2
-      Tags:
-        - Key: Name
-          Value: !Sub
-            - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Database ${ResourceName}
-            - ResourceName: storeAllTheThings
-      VPCSecurityGroups:
-        - !Ref databaseF50FCBBCSecurityGroup
-    Metadata:
-      StackeryName: storeAllTheThings
-  databaseF50FCBBCSubnetGroup:
-    Type: AWS::RDS::DBSubnetGroup
-    Properties:
-      DBSubnetGroupDescription: !Sub
-        - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Database ${ResourceName} VPC Subnets
-        - ResourceName: databaseF50FCBBC
-      SubnetIds: !Ref DefaultVPCSubnets
-      Tags:
-        - Key: Name
-          Value: !Sub
-            - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Database ${ResourceName} VPC Subnets
-            - ResourceName: databaseF50FCBBC
-  databaseF50FCBBCSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Database Security Group
-      SecurityGroupIngress:
-        CidrIp: 0.0.0.0/0
-        FromPort: 3306
-        IpProtocol: tcp
-        ToPort: 3306
-      Tags:
-        - Key: Name
-          Value: !Sub
-            - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Database ${ResourceName} VPC Security Group
-            - ResourceName: storeAllTheThings
-      VpcId: !Ref DefaultVPCId
   queue29EA3919:
     Type: AWS::SQS::Queue
     Properties:
@@ -506,12 +448,6 @@ Parameters:
   StackeryEnvironmentAPIGatewayStageName:
     Type: String
     Description: Environment name used for API Gateway Stage names (injected by Stackery at deployment time)
-  DefaultVPCId:
-    Type: AWS::EC2::VPC::Id
-    Description: AWS account-specific default VPC ID (injected by Stackery at deployment time)
-  DefaultVPCSubnets:
-    Type: List<AWS::EC2::Subnet::Id>
-    Description: AWS account-specific default VPC subnets (injected by Stackery at deployment time)
 Metadata:
   StackeryErrorsTargets:
     function13DB8388: {}
