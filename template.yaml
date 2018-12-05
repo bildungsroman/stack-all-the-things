@@ -16,7 +16,13 @@ Resources:
       Tracing: Active
       Policies:
         - AWSXrayWriteOnlyAccess
-      Environment: {}
+      Environment:
+        Variables:
+          DB_INSTANCE: !Ref databaseE391BFF4
+          DB_ADDRESS: !GetAtt databaseE391BFF4.Endpoint.Address
+          DB_PORT: !GetAtt databaseE391BFF4.Endpoint.Port
+          DB_ARN: !Sub arn:aws:rds:${AWS::Region}:${AWS::AccountId}:db:${databaseE391BFF4}
+          DB_PASSWORD: !Ref EnvConfigbadPlaceForADbPasswordAsString
     Metadata:
       StackeryName: getAllTheThings
   api9B06B464:
@@ -438,6 +444,134 @@ Resources:
       ApiId: !GetAtt graphql58E2566.ApiId
       FieldName: downs
     DependsOn: graphql58E2566Schema
+  databaseE391BFF4:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: '5'
+      AllowMajorVersionUpgrade: true
+      AutoMinorVersionUpgrade: true
+      BackupRetentionPeriod: '0'
+      CopyTagsToSnapshot: true
+      DBInstanceClass: db.t2.micro
+      DBSubnetGroupName: !Ref databaseE391BFF4SubnetGroup
+      Engine: mysql
+      EngineVersion: '5.7'
+      MasterUsername: root
+      MasterUserPassword: notblank
+      MultiAZ: false
+      PubliclyAccessible: true
+      StorageType: gp2
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - Stack ${StackTagName} Environment ${EnvironmentTagName} Database ${ResourceName}
+            - ResourceName: iAmARealDatabase
+      VPCSecurityGroups:
+        - !Ref databaseE391BFF4SecurityGroup
+    Metadata:
+      StackeryName: iAmARealDatabase
+  databaseE391BFF4SubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: !Sub
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Database ${ResourceName} VPC Subnets
+        - ResourceName: databaseE391BFF4
+      SubnetIds: !Ref DefaultVPCSubnets
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - Stack ${StackTagName} Environment ${EnvironmentTagName} Database ${ResourceName} VPC Subnets
+            - ResourceName: databaseE391BFF4
+  databaseE391BFF4SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Database Security Group
+      SecurityGroupIngress:
+        CidrIp: 0.0.0.0/0
+        FromPort: 3306
+        IpProtocol: tcp
+        ToPort: 3306
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - Stack ${StackTagName} Environment ${EnvironmentTagName} Database ${ResourceName} VPC Security Group
+            - ResourceName: iAmARealDatabase
+      VpcId: !Ref DefaultVPCId
+  dockerTask2A5C09C4:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+        - Image: hello-world
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref dockerTask2A5C09C4LogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: hello-world
+          Name: 0
+          Environment:
+            - Name: DB_INSTANCE
+              Value: !Ref databaseE391BFF4
+            - Name: DB_ADDRESS
+              Value: !GetAtt databaseE391BFF4.Endpoint.Address
+            - Name: DB_PORT
+              Value: !GetAtt databaseE391BFF4.Endpoint.Port
+            - Name: DB_ARN
+              Value: !Sub arn:aws:rds:${AWS::Region}:${AWS::AccountId}:db:${databaseE391BFF4}
+      Cpu: 1024
+      ExecutionRoleArn: !GetAtt dockerTask2A5C09C4ExecutionRole.Arn
+      Memory: 2048
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn: !GetAtt dockerTask2A5C09C4TaskRole.Arn
+      Volumes: []
+    DependsOn: dockerTask2A5C09C4LogGroup
+    Metadata:
+      StackeryName: downWithContainers
+  dockerTask2A5C09C4LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /stackery/task/${AWS::StackName}-dockerTask2A5C09C4/hello-world
+  dockerTask2A5C09C4ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-DockerTaskExecutionRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+        - PolicyName: DownloadDockerImagesFromECR
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub arn:aws:logs:*:*:log-group:/stackery/task/${AWS::StackName}-*
+              - Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchGetImage
+                Resource: '*'
+  dockerTask2A5C09C4TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-DockerTaskTaskRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
 Parameters:
   StackeryStackTagName:
     Type: String
@@ -448,6 +582,23 @@ Parameters:
   StackeryEnvironmentAPIGatewayStageName:
     Type: String
     Description: Environment name used for API Gateway Stage names (injected by Stackery at deployment time)
+  StackTagName:
+    Type: String
+    Description: Stack Name (injected by Stackery at deployment time)
+  EnvironmentTagName:
+    Type: String
+    Description: Environment Name (injected by Stackery at deployment time)
+  DefaultVPCId:
+    Type: AWS::EC2::VPC::Id
+    Description: AWS account-specific default VPC ID (injected by Stackery at deployment time)
+  DefaultVPCSubnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: AWS account-specific default VPC subnets (injected by Stackery at deployment time)
+  EnvConfigbadPlaceForADbPasswordAsString:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /<EnvironmentName>/badPlaceForADbPassword
 Metadata:
   StackeryErrorsTargets:
     function13DB8388: {}
+  EnvConfigParameters:
+    EnvConfigbadPlaceForADbPasswordAsString: badPlaceForADbPassword
