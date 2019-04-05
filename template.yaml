@@ -418,7 +418,11 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: hello-world
           Name: 0
-          Environment: []
+          Environment:
+            - Name: FUNCTION_NAME
+              Value: !Ref funkyFunction
+            - Name: FUNCTION_ARN
+              Value: !GetAtt funkyFunction.Arn
       Cpu: 1024
       ExecutionRoleArn: !GetAtt dockerTask2A5C09C4ExecutionRole.Arn
       Memory: 2048
@@ -473,6 +477,16 @@ Resources:
           Principal:
             Service: ecs-tasks.amazonaws.com
           Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AccessfunkyFunction
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !GetAtt funkyFunction.Arn
   putTheThings:
     Type: AWS::Serverless::Function
     Properties:
@@ -535,6 +549,28 @@ Resources:
       Tracing: Active
       Policies:
         - AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ecs:RunTask
+                - ecs:DescribeTasks
+                - ecs:StopTask
+              Resource:
+                - !Ref dockerTask2A5C09C4
+                - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task/*
+        - Statement:
+            - Effect: Allow
+              Action:
+                - iam:PassRole
+              Resource:
+                - !GetAtt dockerTask2A5C09C4ExecutionRole.Arn
+                - !GetAtt dockerTask2A5C09C4TaskRole.Arn
+      Environment:
+        Variables:
+          DOCKER_TASK_ARN: !Ref dockerTask2A5C09C4
+          DOCKER_TASK_SUBNETS: !Join
+            - ','
+            - !Ref DefaultVPCSubnets
     Metadata:
       StackeryName: funkyFunction
 Parameters:
@@ -556,6 +592,9 @@ Parameters:
   EnvironmentTagName:
     Type: String
     Description: Environment Name (injected by Stackery at deployment time)
+  DefaultVPCSubnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: AWS account-specific default VPC subnets (injected by Stackery at deployment time)
 Metadata:
   StackeryErrorsTargets:
     function13DB8388: {}
