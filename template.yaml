@@ -235,27 +235,6 @@ Resources:
           Type: SNS
           Properties:
             Topic: !Ref topic43B499AD
-  functionC6290DFC:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub ${AWS::StackName}-functionC6290DFC
-      Description: !Sub
-        - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Function ${ResourceName}
-        - ResourceName: functionC6290DFC
-      CodeUri: src/functionC6290DFC
-      Handler: index.handler
-      Runtime: nodejs8.10
-      MemorySize: 3008
-      Timeout: 30
-      Tracing: Active
-      Policies:
-        - AWSXrayWriteOnlyAccess
-      Events:
-        queue29EA3919:
-          Type: SQS
-          Properties:
-            Queue: !GetAtt queue29EA3919.Arn
-            BatchSize: 1
   function3A959F50:
     Type: AWS::Serverless::Function
     Properties:
@@ -518,6 +497,29 @@ Resources:
             RestApiId: !Ref api9B06B464
     Metadata:
       StackeryName: putTheThings
+  whyNoName:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-whyNoName
+      Description: !Sub
+        - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Function ${ResourceName}
+        - ResourceName: whyNoName
+      CodeUri: src/whyNoName
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+      Events:
+        queue29EA3919:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt queue29EA3919.Arn
+            BatchSize: 1
+    Metadata:
+      StackeryName: whyNoName
 Parameters:
   StackeryStackTagName:
     Type: String
