@@ -1149,6 +1149,34 @@ Resources:
             --==BOUNDARY==
           - SSHKeys: '{"<username1>":"<public key>","<username2>":"<public key>"}'
             ResourceId: BastardBastion
+  privateApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub
+        - ${ResourceName} From Stack ${StackTagName} Environment ${EnvironmentTagName}
+        - ResourceName: privateApi
+      StageName: !Ref EnvironmentAPIGatewayStageName
+      DefinitionBody:
+        swagger: '2.0'
+        info: {}
+        paths:
+          /:
+            get:
+              responses: {}
+          /put:
+            put:
+              responses: {}
+          /post:
+            post:
+              responses: {}
+          /delete:
+            delete:
+              responses: {}
+      EndpointConfiguration: PRIVATE
+      TracingEnabled: true
+      Cors: '''*'''
+    Metadata:
+      StackeryName: privateApi
 Parameters:
   StackeryStackTagName:
     Type: String
@@ -1171,6 +1199,9 @@ Parameters:
   AmazonLinux2ImageId:
     Type: AWS::EC2::Image::Id
     Description: Latest Amazon Linux 2 AMI ID (injected by Stackery at deployment time)
+  EnvironmentAPIGatewayStageName:
+    Type: String
+    Description: Environment name used for API Gateway Stage names (injected by Stackery at deployment time)
 Metadata:
   StackeryErrorsTargets:
     function13DB8388: {}
