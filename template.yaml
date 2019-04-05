@@ -520,6 +520,23 @@ Resources:
             BatchSize: 1
     Metadata:
       StackeryName: whyNoName
+  funkyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-funkyFunction
+      Description: !Sub
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: funkyFunction
+      CodeUri: src/funkyFunction
+      Handler: handler.handler
+      Runtime: python3.6
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+    Metadata:
+      StackeryName: funkyFunction
 Parameters:
   StackeryStackTagName:
     Type: String
