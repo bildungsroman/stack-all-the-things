@@ -1162,15 +1162,31 @@ Resources:
         paths:
           /:
             get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Function2.Arn}/invocations
               responses: {}
           /put:
             put:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Function3.Arn}/invocations
               responses: {}
           /post:
             post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Function.Arn}/invocations
               responses: {}
           /delete:
             delete:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Function4.Arn}/invocations
               responses: {}
         x-amazon-apigateway-policy:
           Statement:
@@ -1187,6 +1203,94 @@ Resources:
       Cors: '''*'''
     Metadata:
       StackeryName: privateApi
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-Function
+      Description: !Sub
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: Function
+      CodeUri: src/Function
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+      Events:
+        privateApiPOSTpost:
+          Type: Api
+          Properties:
+            Path: /post
+            Method: POST
+            RestApiId: !Ref privateApi
+  Function2:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-Function2
+      Description: !Sub
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: Function2
+      CodeUri: src/Function2
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+      Events:
+        privateApiGET:
+          Type: Api
+          Properties:
+            Path: /
+            Method: GET
+            RestApiId: !Ref privateApi
+  Function3:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-Function3
+      Description: !Sub
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: Function3
+      CodeUri: src/Function3
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+      Events:
+        privateApiPUTput:
+          Type: Api
+          Properties:
+            Path: /put
+            Method: PUT
+            RestApiId: !Ref privateApi
+  Function4:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-Function4
+      Description: !Sub
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: Function4
+      CodeUri: src/Function4
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+      Events:
+        privateApiDELETEdelete:
+          Type: Api
+          Properties:
+            Path: /delete
+            Method: DELETE
+            RestApiId: !Ref privateApi
 Parameters:
   StackeryStackTagName:
     Type: String
