@@ -658,6 +658,12 @@ Resources:
             Stream: !GetAtt tableDE11F4FE.StreamArn
             StartingPosition: TRIM_HORIZON
             BatchSize: 1
+      Environment:
+        Variables:
+          DB_ID: !Ref secretDB
+          DB_ADDRESS: !GetAtt secretDB.Endpoint.Address
+          DB_PORT: !GetAtt secretDB.Endpoint.Port
+          DB_ARN: !Sub arn:aws:rds:${AWS::Region}:${AWS::AccountId}:cluster:${secretDB}
     Metadata:
       StackeryName: soSecure
   VirtualReality:
@@ -881,6 +887,53 @@ Resources:
     Properties:
       RouteTableId: !Ref VirtualRealityPublicSubnetsRouteTable
       SubnetId: !Ref VirtualRealityPublicSubnet2
+  secretDB:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      BackupRetentionPeriod: 1
+      DBSubnetGroupName: !Ref secretDBSubnetGroup
+      Engine: aurora
+      EngineMode: serverless
+      MasterUsername: root
+      MasterUserPassword: ''
+      ScalingConfiguration:
+        AutoPause: false
+        MinCapacity: 2
+        MaxCapacity: 256
+      StorageEncrypted: true
+      VpcSecurityGroupIds:
+        - !Ref secretDBSecurityGroup
+    Metadata:
+      StackeryName: secretDB
+  secretDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: !Sub
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Database ${ResourceName} VPC Subnets
+        - ResourceName: secretDB
+      SubnetIds:
+        - !Ref VirtualRealityPrivateSubnet1
+        - !Ref VirtualRealityPrivateSubnet2
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - Stack ${StackTagName} Environment ${EnvironmentTagName} Database ${ResourceName} VPC Subnets
+            - ResourceName: secretDB
+  secretDBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Database Security Group
+      SecurityGroupIngress:
+        CidrIp: 0.0.0.0/0
+        FromPort: 3306
+        IpProtocol: tcp
+        ToPort: 3306
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - Stack ${StackTagName} Environment ${EnvironmentTagName} Database ${ResourceName} VPC Security Group
+            - ResourceName: secretDB
+      VpcId: !Ref VirtualReality
 Parameters:
   StackeryStackTagName:
     Type: String
