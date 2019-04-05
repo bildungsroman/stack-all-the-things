@@ -533,7 +533,7 @@ Resources:
   funkyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-funkyFunction
+      FunctionName: !Sub ${AWS::StackName}-funkysoSecure
       Description: !Sub
         - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
         - ResourceName: funkyFunction
@@ -566,7 +566,14 @@ Resources:
           DOCKER_TASK_ARN: !Ref dockerTask2A5C09C4
           DOCKER_TASK_SUBNETS: !Join
             - ','
-            - !Ref DefaultVPCSubnets
+            - - !If
+                - VirtualNetworkUseExistingResource
+                - !GetAtt VirtualNetworkExistingResource.PrivateSubnet1
+                - !Ref VirtualRealityPrivateSubnet1
+              - !If
+                - VirtualNetworkUseExistingResource
+                - !GetAtt VirtualNetworkExistingResource.PrivateSubnet2
+                - !Ref VirtualRealityPrivateSubnet2
     Metadata:
       StackeryName: funkyFunction
   streamTheThings:
@@ -622,7 +629,38 @@ Resources:
       Principal: cognito-idp.amazonaws.com
       Action: lambda:InvokeFunction
       SourceArn: !GetAtt UserPool.Arn
-  VirtualNetwork:
+  soSecure:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-soSecure
+      Description: !Sub
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: soSecure
+      CodeUri: src/soSecure
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+        - AWSLambdaENIManagementAccess
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt VirtualReality.DefaultSecurityGroup
+        SubnetIds:
+          - !Ref VirtualRealityPrivateSubnet1
+          - !Ref VirtualRealityPrivateSubnet2
+      Events:
+        tableDE11F4FE:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt tableDE11F4FE.StreamArn
+            StartingPosition: TRIM_HORIZON
+            BatchSize: 1
+    Metadata:
+      StackeryName: soSecure
+  VirtualReality:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 10.0.0.0/16
@@ -630,8 +668,10 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName}
-            - ResourceName: VirtualNetwork
-  VirtualNetworkPrivateSubnet1:
+            - ResourceName: VirtualReality
+    Metadata:
+      StackeryName: VirtualReality
+  VirtualRealityPrivateSubnet1:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::Subnet
@@ -649,9 +689,9 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName} Private Subnet 1
-            - ResourceName: VirtualNetwork
-      VpcId: !Ref VirtualNetwork
-  VirtualNetworkPrivateSubnet2:
+            - ResourceName: VirtualReality
+      VpcId: !Ref VirtualReality
+  VirtualRealityPrivateSubnet2:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::Subnet
@@ -669,9 +709,9 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName} Private Subnet 2
-            - ResourceName: VirtualNetwork
-      VpcId: !Ref VirtualNetwork
-  VirtualNetworkPublicSubnet1:
+            - ResourceName: VirtualReality
+      VpcId: !Ref VirtualReality
+  VirtualRealityPublicSubnet1:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::Subnet
@@ -690,9 +730,9 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName} Public Subnet 1
-            - ResourceName: VirtualNetwork
-      VpcId: !Ref VirtualNetwork
-  VirtualNetworkPublicSubnet2:
+            - ResourceName: VirtualReality
+      VpcId: !Ref VirtualReality
+  VirtualRealityPublicSubnet2:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::Subnet
@@ -711,22 +751,30 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName} Public Subnet 2
-            - ResourceName: VirtualNetwork
-      VpcId: !Ref VirtualNetwork
-  VirtualNetworkPrivateSubnet1NatGatewayEIP:
+            - ResourceName: VirtualReality
+      VpcId: !Ref VirtualReality
+  VirtualRealityPrivateSubnet1NatGateway:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt VirtualRealityPrivateSubnet1NatGatewayEIP.AllocationId
+      SubnetId: !Ref VirtualRealityPublicSubnet1
+  VirtualRealityPrivateSubnet1NatGatewayEIP:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::EIP
     Properties:
       Domain: vpc
-  VirtualNetworkPrivateSubnet1NatGateway:
+  VirtualRealityPrivateSubnet1NatGatewayRoute:
     Metadata:
       StackeryManaged: true
-    Type: AWS::EC2::NatGateway
+    Type: AWS::EC2::Route
     Properties:
-      AllocationId: !GetAtt VirtualNetworkPrivateSubnet1NatGatewayEIP.AllocationId
-      SubnetId: !Ref VirtualNetworkPublicSubnet1
-  VirtualNetworkPrivateSubnet1RouteTable:
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref VirtualRealityPrivateSubnet1NatGateway
+      RouteTableId: !Ref VirtualRealityPrivateSubnet1RouteTable
+  VirtualRealityPrivateSubnet1RouteTable:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::RouteTable
@@ -735,37 +783,37 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName} Private Subnet 1 Route Table
-            - ResourceName: VirtualNetwork
-      VpcId: !Ref VirtualNetwork
-  VirtualNetworkPrivateSubnet1NatGatewayRoute:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::Route
-    Properties:
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref VirtualNetworkPrivateSubnet1NatGateway
-      RouteTableId: !Ref VirtualNetworkPrivateSubnet1RouteTable
-  VirtualNetworkPrivateSubnet1RouteTableAssociation:
+            - ResourceName: VirtualReality
+      VpcId: !Ref VirtualReality
+  VirtualRealityPrivateSubnet1RouteTableAssociation:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref VirtualNetworkPrivateSubnet1RouteTable
-      SubnetId: !Ref VirtualNetworkPrivateSubnet1
-  VirtualNetworkPrivateSubnet2NatGatewayEIP:
+      RouteTableId: !Ref VirtualRealityPrivateSubnet1RouteTable
+      SubnetId: !Ref VirtualRealityPrivateSubnet1
+  VirtualRealityPrivateSubnet2NatGateway:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt VirtualRealityPrivateSubnet2NatGatewayEIP.AllocationId
+      SubnetId: !Ref VirtualRealityPublicSubnet2
+  VirtualRealityPrivateSubnet2NatGatewayEIP:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::EIP
     Properties:
       Domain: vpc
-  VirtualNetworkPrivateSubnet2NatGateway:
+  VirtualRealityPrivateSubnet2NatGatewayRoute:
     Metadata:
       StackeryManaged: true
-    Type: AWS::EC2::NatGateway
+    Type: AWS::EC2::Route
     Properties:
-      AllocationId: !GetAtt VirtualNetworkPrivateSubnet2NatGatewayEIP.AllocationId
-      SubnetId: !Ref VirtualNetworkPublicSubnet2
-  VirtualNetworkPrivateSubnet2RouteTable:
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref VirtualRealityPrivateSubnet2NatGateway
+      RouteTableId: !Ref VirtualRealityPrivateSubnet2RouteTable
+  VirtualRealityPrivateSubnet2RouteTable:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::RouteTable
@@ -774,24 +822,23 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName} Private Subnet 2 Route Table
-            - ResourceName: VirtualNetwork
-      VpcId: !Ref VirtualNetwork
-  VirtualNetworkPrivateSubnet2NatGatewayRoute:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::Route
-    Properties:
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref VirtualNetworkPrivateSubnet2NatGateway
-      RouteTableId: !Ref VirtualNetworkPrivateSubnet2RouteTable
-  VirtualNetworkPrivateSubnet2RouteTableAssociation:
+            - ResourceName: VirtualReality
+      VpcId: !Ref VirtualReality
+  VirtualRealityPrivateSubnet2RouteTableAssociation:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref VirtualNetworkPrivateSubnet2RouteTable
-      SubnetId: !Ref VirtualNetworkPrivateSubnet2
-  VirtualNetworkPublicSubnetsInternetGateway:
+      RouteTableId: !Ref VirtualRealityPrivateSubnet2RouteTable
+      SubnetId: !Ref VirtualRealityPrivateSubnet2
+  VirtualRealityPublicSubnetsInternetGatewayAttachment:
+    Metadata:
+      StackeryManaged: true
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref VirtualRealityPublicSubnetsInternetGateway
+      VpcId: !Ref VirtualReality
+  VirtualRealityPublicSubnetsInternetGateway:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::InternetGateway
@@ -800,15 +847,16 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName} Public Subnets Internet Gateway
-            - ResourceName: VirtualNetwork
-  VirtualNetworkPublicSubnetsInternetGatewayAttachment:
+            - ResourceName: VirtualReality
+  VirtualRealityPublicSubnetsInternetGatewayRoute:
     Metadata:
       StackeryManaged: true
-    Type: AWS::EC2::VPCGatewayAttachment
+    Type: AWS::EC2::Route
     Properties:
-      InternetGatewayId: !Ref VirtualNetworkPublicSubnetsInternetGateway
-      VpcId: !Ref VirtualNetwork
-  VirtualNetworkPublicSubnetsRouteTable:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref VirtualRealityPublicSubnetsInternetGateway
+      RouteTableId: !Ref VirtualRealityPublicSubnetsRouteTable
+  VirtualRealityPublicSubnetsRouteTable:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::RouteTable
@@ -817,30 +865,22 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName} Public Subnets Route Table
-            - ResourceName: VirtualNetwork
-      VpcId: !Ref VirtualNetwork
-  VirtualNetworkPublicSubnetsInternetGatewayRoute:
-    Metadata:
-      StackeryManaged: true
-    Type: AWS::EC2::Route
-    Properties:
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref VirtualNetworkPublicSubnetsInternetGateway
-      RouteTableId: !Ref VirtualNetworkPublicSubnetsRouteTable
-  VirtualNetworkPublicSubnet1RouteTableAssociation:
+            - ResourceName: VirtualReality
+      VpcId: !Ref VirtualReality
+  VirtualRealityPublicSubnet1RouteTableAssociation:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref VirtualNetworkPublicSubnetsRouteTable
-      SubnetId: !Ref VirtualNetworkPublicSubnet1
-  VirtualNetworkPublicSubnet2RouteTableAssociation:
+      RouteTableId: !Ref VirtualRealityPublicSubnetsRouteTable
+      SubnetId: !Ref VirtualRealityPublicSubnet1
+  VirtualRealityPublicSubnet2RouteTableAssociation:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref VirtualNetworkPublicSubnetsRouteTable
-      SubnetId: !Ref VirtualNetworkPublicSubnet2
+      RouteTableId: !Ref VirtualRealityPublicSubnetsRouteTable
+      SubnetId: !Ref VirtualRealityPublicSubnet2
 Parameters:
   StackeryStackTagName:
     Type: String
@@ -860,9 +900,6 @@ Parameters:
   EnvironmentTagName:
     Type: String
     Description: Environment Name (injected by Stackery at deployment time)
-  DefaultVPCSubnets:
-    Type: List<AWS::EC2::Subnet::Id>
-    Description: AWS account-specific default VPC subnets (injected by Stackery at deployment time)
 Metadata:
   StackeryErrorsTargets:
     function13DB8388: {}
