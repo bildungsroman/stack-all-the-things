@@ -277,6 +277,7 @@ Resources:
       Environment:
         Variables:
           SECRETS_NAMESPACE: !Sub /${StackeryEnvironmentTagName}/
+          KEY: !Ref EnvConfigparameterKeyAsString
     Metadata:
       StackeryName: getTheThings
   cdn861F67CE:
@@ -497,6 +498,11 @@ Parameters:
   StackeryEnvironmentAPIGatewayStageName:
     Type: String
     Description: Environment name used for API Gateway Stage names (injected by Stackery at deployment time)
+  EnvConfigparameterKeyAsString:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /<EnvironmentName>/parameterKey
 Metadata:
   StackeryErrorsTargets:
     function13DB8388: {}
+  EnvConfigParameters:
+    EnvConfigparameterKeyAsString: parameterKey
