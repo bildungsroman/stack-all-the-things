@@ -195,18 +195,6 @@ Resources:
       KmsMasterKeyId: alias/aws/sqs
     Metadata:
       StackeryName: iNameUQ
-  topic43B499AD:
-    Type: AWS::SNS::Topic
-    Properties:
-      TopicName: !Sub ${AWS::StackName}-topic43B499AD
-  stream61080143:
-    Type: AWS::Kinesis::Stream
-    Properties:
-      Name: !Sub ${AWS::StackName}-stream61080143
-      ShardCount: 1
-      StreamEncryption:
-        EncryptionType: KMS
-        KeyId: alias/aws/kinesis
   functionECD3A4E8:
     Type: AWS::Serverless::Function
     Properties:
@@ -223,18 +211,18 @@ Resources:
       Policies:
         - AWSXrayWriteOnlyAccess
         - KinesisCrudPolicy:
-            StreamName: !Ref stream61080143
+            StreamName: !Ref streamTheThings
         - KinesisStreamReadPolicy:
-            StreamName: !Ref stream61080143
+            StreamName: !Ref streamTheThings
       Environment:
         Variables:
-          STREAM_NAME: !Ref stream61080143
-          STREAM_ARN: !GetAtt stream61080143.Arn
+          STREAM_NAME: !Ref streamTheThings
+          STREAM_ARN: !GetAtt streamTheThings.Arn
       Events:
-        topic43B499AD:
+        allTheTopics:
           Type: SNS
           Properties:
-            Topic: !Ref topic43B499AD
+            Topic: !Ref allTheTopics
   function3A959F50:
     Type: AWS::Serverless::Function
     Properties:
@@ -573,6 +561,22 @@ Resources:
             - !Ref DefaultVPCSubnets
     Metadata:
       StackeryName: funkyFunction
+  streamTheThings:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: !Sub ${AWS::StackName}-streamTheThings
+      ShardCount: 1
+      StreamEncryption:
+        EncryptionType: KMS
+        KeyId: alias/aws/kinesis
+    Metadata:
+      StackeryName: streamTheThings
+  allTheTopics:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${AWS::StackName}-allTheTopics
+    Metadata:
+      StackeryName: allTheTopics
 Parameters:
   StackeryStackTagName:
     Type: String
