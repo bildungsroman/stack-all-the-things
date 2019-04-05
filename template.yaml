@@ -582,6 +582,43 @@ Resources:
       TopicName: !Sub ${AWS::StackName}-allTheTopics
     Metadata:
       StackeryName: allTheTopics
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+      AliasAttributes:
+        - email
+        - preferred_username
+      UserPoolName: !Sub ${AWS::StackName}-UserPool
+      LambdaConfig:
+        PostAuthentication: !GetAtt poolParty.Arn
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+  poolParty:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-poolParty
+      Description: !Sub
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: poolParty
+      CodeUri: src/poolParty
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+    Metadata:
+      StackeryName: poolParty
+  UserPoolTopoolPartyPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt poolParty.Arn
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !GetAtt UserPool.Arn
 Parameters:
   StackeryStackTagName:
     Type: String
