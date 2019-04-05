@@ -214,7 +214,6 @@ Resources:
             StreamName: !Ref streamTheThings
         - KinesisStreamReadPolicy:
             StreamName: !Ref streamTheThings
-        - AWSLambdaENIManagementAccess
       Environment:
         Variables:
           STREAM_NAME: !Ref streamTheThings
@@ -224,12 +223,6 @@ Resources:
           Type: SNS
           Properties:
             Topic: !Ref allTheTopics
-      VpcConfig:
-        SecurityGroupIds:
-          - !GetAtt VirtualNetwork.DefaultSecurityGroup
-        SubnetIds:
-          - !Ref VirtualNetworkPrivateSubnet1
-          - !Ref VirtualNetworkPrivateSubnet2
   function3A959F50:
     Type: AWS::Serverless::Function
     Properties:
