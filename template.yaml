@@ -310,6 +310,9 @@ Resources:
       Timeout: 30
       Tracing: Active
       Role: !GetAtt edgeFunction9CD55C39Role.Arn
+      Environment:
+        Variables:
+          USER_POOL_CLIENT_ID: !Ref UserPoolClient
     Metadata:
       StackeryName: livinOnTheEdge
   edgeFunction9CD55C39Role:
