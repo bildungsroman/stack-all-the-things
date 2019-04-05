@@ -214,6 +214,7 @@ Resources:
             StreamName: !Ref streamTheThings
         - KinesisStreamReadPolicy:
             StreamName: !Ref streamTheThings
+        - AWSLambdaENIManagementAccess
       Environment:
         Variables:
           STREAM_NAME: !Ref streamTheThings
@@ -223,6 +224,12 @@ Resources:
           Type: SNS
           Properties:
             Topic: !Ref allTheTopics
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt VirtualReality.DefaultSecurityGroup
+        SubnetIds:
+          - !Ref VirtualRealityPrivateSubnet1
+          - !Ref VirtualRealityPrivateSubnet2
   function3A959F50:
     Type: AWS::Serverless::Function
     Properties:
@@ -240,6 +247,7 @@ Resources:
         - AWSXrayWriteOnlyAccess
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${StackeryEnvironmentTagName}/*
+        - AWSLambdaENIManagementAccess
       Events:
         api9B06B464:
           Type: Api
@@ -251,6 +259,12 @@ Resources:
         Variables:
           SECRETS_NAMESPACE: !Sub /${StackeryEnvironmentTagName}/
           KEY: !Ref EnvConfigparameterKeyAsString
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt VirtualReality.DefaultSecurityGroup
+        SubnetIds:
+          - !Ref VirtualRealityPrivateSubnet1
+          - !Ref VirtualRealityPrivateSubnet2
     Metadata:
       StackeryName: getTheThings
   cdn861F67CE:
@@ -425,6 +439,10 @@ Resources:
     DependsOn: dockerTask2A5C09C4LogGroup
     Metadata:
       StackeryName: downWithContainers
+      StackeryVirtualNetworkData:
+        SubnetIds:
+          - !Ref VirtualRealityPrivateSubnet1
+          - !Ref VirtualRealityPrivateSubnet2
   dockerTask2A5C09C4LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -495,6 +513,7 @@ Resources:
         - AWSXrayWriteOnlyAccess
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${EnvironmentTagName}/*
+        - AWSLambdaENIManagementAccess
       Events:
         api9B06B464PUT:
           Type: Api
@@ -505,6 +524,12 @@ Resources:
       Environment:
         Variables:
           SECRETS_NAMESPACE: !Sub /${EnvironmentTagName}/
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt VirtualReality.DefaultSecurityGroup
+        SubnetIds:
+          - !Ref VirtualRealityPrivateSubnet1
+          - !Ref VirtualRealityPrivateSubnet2
     Metadata:
       StackeryName: putTheThings
   whyNoName:
@@ -561,6 +586,7 @@ Resources:
               Resource:
                 - !GetAtt dockerTask2A5C09C4ExecutionRole.Arn
                 - !GetAtt dockerTask2A5C09C4TaskRole.Arn
+        - AWSLambdaENIManagementAccess
       Environment:
         Variables:
           DOCKER_TASK_ARN: !Ref dockerTask2A5C09C4
@@ -574,6 +600,12 @@ Resources:
                 - VirtualNetworkUseExistingResource
                 - !GetAtt VirtualNetworkExistingResource.PrivateSubnet2
                 - !Ref VirtualRealityPrivateSubnet2
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt VirtualReality.DefaultSecurityGroup
+        SubnetIds:
+          - !Ref VirtualRealityPrivateSubnet1
+          - !Ref VirtualRealityPrivateSubnet2
     Metadata:
       StackeryName: funkyFunction
   streamTheThings:
@@ -620,6 +652,13 @@ Resources:
       Tracing: Active
       Policies:
         - AWSXrayWriteOnlyAccess
+        - AWSLambdaENIManagementAccess
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt VirtualReality.DefaultSecurityGroup
+        SubnetIds:
+          - !Ref VirtualRealityPrivateSubnet1
+          - !Ref VirtualRealityPrivateSubnet2
     Metadata:
       StackeryName: poolParty
   UserPoolTopoolPartyPermission:
