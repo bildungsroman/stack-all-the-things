@@ -1,200 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 Resources:
-  api9B06B464:
-    Type: AWS::Serverless::Api
-    Properties:
-      Name: !Sub
-        - ${ResourceName} From Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName}
-        - ResourceName: myApi
-      StageName: !Ref StackeryEnvironmentAPIGatewayStageName
-      DefinitionBody:
-        swagger: '2.0'
-        info: {}
-        paths:
-          /:
-            get:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${function3A959F50.Arn}/invocations
-              responses: {}
-            put:
-              x-amazon-apigateway-integration:
-                httpMethod: POST
-                type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${putTheThings.Arn}/invocations
-              responses: {}
-      EndpointConfiguration: REGIONAL
-    Metadata:
-      StackeryName: myApi
-  objectStoreBB958252:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub ${AWS::StackName}-objectstorebb958252
-    Metadata:
-      StackeryName: essThree
-  function13DB8388:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub ${AWS::StackName}-function13DB8388
-      Description: !Sub
-        - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Function ${ResourceName}
-        - ResourceName: logTheEroors
-      CodeUri: src/logTheEroors
-      Handler: index.handler
-      Runtime: nodejs8.10
-      MemorySize: 3008
-      Timeout: 30
-      Tracing: Active
-      Policies:
-        - AWSXrayWriteOnlyAccess
-    Metadata:
-      StackeryName: logTheEroors
-  graphql58E2566:
-    Type: AWS::AppSync::GraphQLApi
-    Properties:
-      Name: !Sub
-        - ${ResourceName} From Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName}
-        - ResourceName: oohImFancy
-      AuthenticationType: API_KEY
-      LogConfig:
-        FieldLogLevel: ERROR
-        CloudWatchLogsRoleArn: !GetAtt graphql58E2566LogsRole.Arn
-    Metadata:
-      StackeryName: oohImFancy
-  graphql58E2566Schema:
-    Type: AWS::AppSync::GraphQLSchema
-    Properties:
-      ApiId: !GetAtt graphql58E2566.ApiId
-      DefinitionS3Location: graphql58E2566/schema.graphql
-  graphql58E2566LogsRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          Effect: Allow
-          Principal:
-            Service: appsync.amazonaws.com
-          Action: sts:AssumeRole
-      RoleName: !Sub ${AWS::StackName}-graphql58E2566-logging
-      Policies:
-        - PolicyName: Log
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource:
-                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/appsync/apis/*
-                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/appsync/apis/*:log-stream:*
-  graphql58E2566QuerygetPostResolver:
-    Type: AWS::AppSync::Resolver
-    Properties:
-      TypeName: Query
-      DataSourceName: !GetAtt graphql58E2566TotableDE11F4FEDataSource.Name
-      RequestMappingTemplateS3Location: graphql58E2566/Query-getPost-request.vm
-      ResponseMappingTemplateS3Location: graphql58E2566/Query-getPost-response.vm
-      ApiId: !GetAtt graphql58E2566.ApiId
-      FieldName: getPost
-    DependsOn: graphql58E2566Schema
-  graphql58E2566MutationaddPostResolver:
-    Type: AWS::AppSync::Resolver
-    Properties:
-      TypeName: Mutation
-      DataSourceName: !GetAtt graphql58E2566TotableDE11F4FEDataSource.Name
-      RequestMappingTemplateS3Location: graphql58E2566/Mutation-addPost-request.vm
-      ResponseMappingTemplateS3Location: graphql58E2566/Mutation-addPost-response.vm
-      ApiId: !GetAtt graphql58E2566.ApiId
-      FieldName: addPost
-    DependsOn: graphql58E2566Schema
-  graphql58E2566PostidResolver:
-    Type: AWS::AppSync::Resolver
-    Properties:
-      TypeName: Post
-      DataSourceName: !GetAtt graphql58E2566TotableDE11F4FEDataSource.Name
-      RequestMappingTemplateS3Location: graphql58E2566/Post-id-request.vm
-      ResponseMappingTemplateS3Location: graphql58E2566/Post-id-response.vm
-      ApiId: !GetAtt graphql58E2566.ApiId
-      FieldName: id
-    DependsOn: graphql58E2566Schema
-  graphql58E2566PostversionResolver:
-    Type: AWS::AppSync::Resolver
-    Properties:
-      TypeName: Post
-      DataSourceName: !GetAtt graphql58E2566TotableDE11F4FEDataSource.Name
-      RequestMappingTemplateS3Location: graphql58E2566/Post-version-request.vm
-      ResponseMappingTemplateS3Location: graphql58E2566/Post-version-response.vm
-      ApiId: !GetAtt graphql58E2566.ApiId
-      FieldName: version
-    DependsOn: graphql58E2566Schema
-  tableDE11F4FE:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: S
-      KeySchema:
-        - AttributeName: id
-          KeyType: HASH
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
-      StreamSpecification:
-        StreamViewType: NEW_AND_OLD_IMAGES
-      TableName: !Sub ${AWS::StackName}-tableDE11F4FE
-    Metadata:
-      StackeryName: dynamo-iiiiite
-  graphql58E2566TotableDE11F4FEDataSource:
-    Type: AWS::AppSync::DataSource
-    Properties:
-      Type: AMAZON_DYNAMODB
-      ServiceRoleArn: !GetAtt graphql58E2566TotableDE11F4FEAccessRole.Arn
-      ApiId: !GetAtt graphql58E2566.ApiId
-      Name: tableDE11F4FE
-      DynamoDBConfig:
-        TableName: !Ref tableDE11F4FE
-        AwsRegion: !Ref AWS::Region
-  graphql58E2566TotableDE11F4FEAccessRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          Effect: Allow
-          Principal:
-            Service: appsync.amazonaws.com
-          Action: sts:AssumeRole
-      RoleName: !Sub ${AWS::StackName}-graphql58E2566-to-tableDE11F4FE
-      Policies:
-        - PolicyName: Access
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - dynamodb:GetItem
-                  - dynamodb:PutItem
-                  - dynamodb:DeleteItem
-                  - dynamodb:UpdateItem
-                  - dynamodb:Query
-                  - dynamodb:Scan
-                  - dynamodb:BatchGetItem
-                  - dynamodb:BatchWriteItem
-                Resource:
-                  - !GetAtt tableDE11F4FE.Arn
-                  - !Sub ${tableDE11F4FE.Arn}/index/*
-  queue29EA3919:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: !Sub ${AWS::StackName}-queue29EA3919
-      KmsMasterKeyId: alias/aws/sqs
-    Metadata:
-      StackeryName: iNameUQ
   functionECD3A4E8:
     Type: AWS::Serverless::Function
     Properties:
@@ -249,12 +55,12 @@ Resources:
             SecretArn: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${StackeryEnvironmentTagName}/*
         - AWSLambdaENIManagementAccess
       Events:
-        api9B06B464:
+        GatewayToHell:
           Type: Api
           Properties:
             Path: /
             Method: GET
-            RestApiId: !Ref api9B06B464
+            RestApiId: !Ref GatewayToHell
       Environment:
         Variables:
           SECRETS_NAMESPACE: !Sub /${StackeryEnvironmentTagName}/
@@ -267,150 +73,6 @@ Resources:
           - !Ref VirtualRealityPrivateSubnet2
     Metadata:
       StackeryName: getTheThings
-  cdn861F67CE:
-    Type: AWS::CloudFront::Distribution
-    Properties:
-      DistributionConfig:
-        DefaultCacheBehavior:
-          Compress: true
-          ForwardedValues:
-            Cookies:
-              Forward: none
-            QueryString: false
-          TargetOriginId: StackeryCDN
-          ViewerProtocolPolicy: redirect-to-https
-          LambdaFunctionAssociations:
-            - EventType: viewer-response
-              LambdaFunctionARN: !GetAtt edgeFunction9CD55C39.VersionArn
-        Enabled: true
-        PriceClass: PriceClass_100
-        Origins:
-          - DomainName: !GetAtt objectStoreBB958252.DomainName
-            Id: StackeryCDN
-            S3OriginConfig:
-              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${cdn861F67CEOriginAccessIdentity}
-    Metadata:
-      StackeryName: distributeAllTheThings
-  cdn861F67CEOriginAccessIdentity:
-    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
-    Properties:
-      CloudFrontOriginAccessIdentityConfig:
-        Comment: Stackery
-  cdn861F67CEBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref objectStoreBB958252
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${cdn861F67CEOriginAccessIdentity}
-            Action: s3:GetObject
-            Resource: !Sub
-              - ${BucketArn}/*
-              - BucketArn: !GetAtt objectStoreBB958252.Arn
-  edgeFunction9CD55C39:
-    Type: Custom::StackeryEdgeFunction
-    Properties:
-      ServiceToken: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:stackery-agent-commander
-      FunctionName: !Sub ${AWS::StackName}-edgeFunction9CD55C39
-      Description: !Sub
-        - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Function ${ResourceName}
-        - ResourceName: livinOnTheEdge
-      Runtime: nodejs8.10
-      CodeUri: src/edgeFunction9CD55C39
-      Handler: index.handler
-      MemorySize: 3008
-      Timeout: 30
-      Tracing: Active
-      Role: !GetAtt edgeFunction9CD55C39Role.Arn
-      Environment:
-        Variables:
-          USER_POOL_CLIENT_ID: !Ref UserPoolClient
-    Metadata:
-      StackeryName: livinOnTheEdge
-  edgeFunction9CD55C39Role:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${AWS::StackName}-edgeFunction9CD55C39
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          Effect: Allow
-          Principal:
-            Service:
-              - lambda.amazonaws.com
-              - edgelambda.amazonaws.com
-          Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
-  graphql58E2566PostauthorResolver:
-    Type: AWS::AppSync::Resolver
-    Properties:
-      TypeName: Post
-      DataSourceName: !GetAtt graphql58E2566TotableDE11F4FEDataSource.Name
-      RequestMappingTemplateS3Location: graphql58E2566/Post-author-request.vm
-      ResponseMappingTemplateS3Location: graphql58E2566/Post-author-response.vm
-      ApiId: !GetAtt graphql58E2566.ApiId
-      FieldName: author
-    DependsOn: graphql58E2566Schema
-  graphql58E2566LocalDataSource:
-    Type: AWS::AppSync::DataSource
-    Properties:
-      Type: NONE
-      ApiId: !GetAtt graphql58E2566.ApiId
-      Name: Local
-  graphql58E2566PosttitleResolver:
-    Type: AWS::AppSync::Resolver
-    Properties:
-      TypeName: Post
-      DataSourceName: !GetAtt graphql58E2566LocalDataSource.Name
-      RequestMappingTemplateS3Location: graphql58E2566/Post-title-request.vm
-      ResponseMappingTemplateS3Location: graphql58E2566/Post-title-response.vm
-      ApiId: !GetAtt graphql58E2566.ApiId
-      FieldName: title
-    DependsOn: graphql58E2566Schema
-  graphql58E2566PostcontentResolver:
-    Type: AWS::AppSync::Resolver
-    Properties:
-      TypeName: Post
-      DataSourceName: !GetAtt graphql58E2566TotableDE11F4FEDataSource.Name
-      RequestMappingTemplateS3Location: graphql58E2566/Post-content-request.vm
-      ResponseMappingTemplateS3Location: graphql58E2566/Post-content-response.vm
-      ApiId: !GetAtt graphql58E2566.ApiId
-      FieldName: content
-    DependsOn: graphql58E2566Schema
-  graphql58E2566PosturlResolver:
-    Type: AWS::AppSync::Resolver
-    Properties:
-      TypeName: Post
-      DataSourceName: !GetAtt graphql58E2566LocalDataSource.Name
-      RequestMappingTemplateS3Location: graphql58E2566/Post-url-request.vm
-      ResponseMappingTemplateS3Location: graphql58E2566/Post-url-response.vm
-      ApiId: !GetAtt graphql58E2566.ApiId
-      FieldName: url
-    DependsOn: graphql58E2566Schema
-  graphql58E2566PostupsResolver:
-    Type: AWS::AppSync::Resolver
-    Properties:
-      TypeName: Post
-      DataSourceName: !GetAtt graphql58E2566TotableDE11F4FEDataSource.Name
-      RequestMappingTemplateS3Location: graphql58E2566/Post-ups-request.vm
-      ResponseMappingTemplateS3Location: graphql58E2566/Post-ups-response.vm
-      ApiId: !GetAtt graphql58E2566.ApiId
-      FieldName: ups
-    DependsOn: graphql58E2566Schema
-  graphql58E2566PostdownsResolver:
-    Type: AWS::AppSync::Resolver
-    Properties:
-      TypeName: Post
-      DataSourceName: !GetAtt graphql58E2566TotableDE11F4FEDataSource.Name
-      RequestMappingTemplateS3Location: graphql58E2566/Post-downs-request.vm
-      ResponseMappingTemplateS3Location: graphql58E2566/Post-downs-response.vm
-      ApiId: !GetAtt graphql58E2566.ApiId
-      FieldName: downs
-    DependsOn: graphql58E2566Schema
   dockerTask2A5C09C4:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -515,12 +177,12 @@ Resources:
             SecretArn: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${EnvironmentTagName}/*
         - AWSLambdaENIManagementAccess
       Events:
-        api9B06B464PUT:
+        GatewayToHellPUT:
           Type: Api
           Properties:
             Path: /
             Method: PUT
-            RestApiId: !Ref api9B06B464
+            RestApiId: !Ref GatewayToHell
       Environment:
         Variables:
           SECRETS_NAMESPACE: !Sub /${EnvironmentTagName}/
@@ -548,10 +210,10 @@ Resources:
       Policies:
         - AWSXrayWriteOnlyAccess
       Events:
-        queue29EA3919:
+        iQueueYou:
           Type: SQS
           Properties:
-            Queue: !GetAtt queue29EA3919.Arn
+            Queue: !GetAtt iQueueYou.Arn
             BatchSize: 1
     Metadata:
       StackeryName: whyNoName
@@ -691,10 +353,10 @@ Resources:
           - !Ref VirtualRealityPrivateSubnet1
           - !Ref VirtualRealityPrivateSubnet2
       Events:
-        tableDE11F4FE:
+        TableOfOwnage:
           Type: DynamoDB
           Properties:
-            Stream: !GetAtt tableDE11F4FE.StreamArn
+            Stream: !GetAtt TableOfOwnage.StreamArn
             StartingPosition: TRIM_HORIZON
             BatchSize: 1
       Environment:
@@ -1187,6 +849,344 @@ Resources:
       Cors: '''*'''
     Metadata:
       StackeryName: privateApi
+  myCdn:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        DefaultCacheBehavior:
+          Compress: true
+          ForwardedValues:
+            Cookies:
+              Forward: none
+            QueryString: false
+          TargetOriginId: StackeryCDN
+          ViewerProtocolPolicy: redirect-to-https
+          LambdaFunctionAssociations:
+            - EventType: viewer-response
+              LambdaFunctionARN: !GetAtt livinOnTheEdge.VersionArn
+        Enabled: true
+        PriceClass: PriceClass_100
+        Origins:
+          - DomainName: !GetAtt BucketOfWin.DomainName
+            Id: StackeryCDN
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${cdn861F67CEOriginAccessIdentity}
+    Metadata:
+      StackeryName: distributeAllTheThings
+  myCdnBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref BucketOfWin
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${cdn861F67CEOriginAccessIdentity}
+            Action: s3:GetObject
+            Resource: !Sub
+              - ${BucketArn}/*
+              - BucketArn: !GetAtt BucketOfWin.Arn
+  logTheEroors:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-logTheEroors
+      Description: !Sub
+        - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Function ${ResourceName}
+        - ResourceName: logTheEroors
+      CodeUri: src/logTheEroors
+      Handler: index.handler
+      Runtime: nodejs10.x
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+    Metadata:
+      StackeryName: logTheEroors
+  myCdnOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: Stackery
+  BucketOfWin:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-bucketofwin
+    Metadata:
+      StackeryName: essThree
+  livinOnTheEdge:
+    Type: Custom::StackeryEdgeFunction
+    Properties:
+      ServiceToken: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:stackery-agent-commander
+      FunctionName: !Sub ${AWS::StackName}-livinOnTheEdge
+      Description: !Sub
+        - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Function ${ResourceName}
+        - ResourceName: livinOnTheEdge
+      Runtime: nodejs8.10
+      CodeUri: src/livinOnTheEdge
+      Handler: index.handler
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Role: !GetAtt livinOnTheEdgeRole.Arn
+      Environment:
+        Variables:
+          USER_POOL_CLIENT_ID: !Ref UserPoolClient
+    Metadata:
+      StackeryName: livinOnTheEdge
+  livinOnTheEdgeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-livinOnTheEdge
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service:
+              - lambda.amazonaws.com
+              - edgelambda.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+  soFancy:
+    Type: AWS::AppSync::GraphQLApi
+    Properties:
+      Name: !Sub
+        - ${ResourceName} From Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName}
+        - ResourceName: oohImFancy
+      AuthenticationType: API_KEY
+      LogConfig:
+        FieldLogLevel: ERROR
+        CloudWatchLogsRoleArn: !GetAtt soFancyLogsRole.Arn
+    Metadata:
+      StackeryName: oohImFancy
+  soFancySchema:
+    Type: AWS::AppSync::GraphQLSchema
+    Properties:
+      ApiId: !GetAtt soFancy.ApiId
+      DefinitionS3Location: soFancy/schema.graphql
+  soFancyTotableDE11F4FEDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      Type: AMAZON_DYNAMODB
+      ServiceRoleArn: !GetAtt soFancyTotableDE11F4FEAccessRole.Arn
+      ApiId: !GetAtt soFancy.ApiId
+      Name: TableOfOwnage
+      DynamoDBConfig:
+        TableName: !Ref TableOfOwnage
+        AwsRegion: !Ref AWS::Region
+  soFancyTotableDE11F4FEAccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: appsync.amazonaws.com
+          Action: sts:AssumeRole
+      RoleName: !Sub ${AWS::StackName}-soFanc-to-TableOfOwnage
+      Policies:
+        - PolicyName: Access
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:BatchGetItem
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !GetAtt TableOfOwnage.Arn
+                  - !Sub ${TableOfOwnage.Arn}/index/*
+  soFancyLocalDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      Type: NONE
+      ApiId: !GetAtt soFancy.ApiId
+      Name: Local
+  soFancyLogsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: appsync.amazonaws.com
+          Action: sts:AssumeRole
+      RoleName: !Sub ${AWS::StackName}-soFancy-logging
+      Policies:
+        - PolicyName: Log
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/appsync/apis/*
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/appsync/apis/*:log-stream:*
+  soFancyQuerygetPostResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Query
+      DataSourceName: !GetAtt soFancyTotableDE11F4FEDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Query-getPost-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Query-getPost-response.vm
+      ApiId: !GetAtt soFancy.ApiId
+      FieldName: getPost
+    DependsOn: soFancySchema
+  soFancyMutationaddPostResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Mutation
+      DataSourceName: !GetAtt soFancyTotableDE11F4FEDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Mutation-addPost-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Mutation-addPost-response.vm
+      ApiId: !GetAtt soFancy.ApiId
+      FieldName: addPost
+    DependsOn: soFancySchema
+  soFancyPostidResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Post
+      DataSourceName: !GetAtt soFancyTotableDE11F4FEDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Post-id-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Post-id-response.vm
+      ApiId: !GetAtt soFancy.ApiId
+      FieldName: id
+    DependsOn: soFancySchema
+  soFancyPostversionResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Post
+      DataSourceName: !GetAtt soFancyTotableDE11F4FEDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Post-version-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Post-version-response.vm
+      ApiId: !GetAtt soFancy.ApiId
+      FieldName: version
+    DependsOn: soFancySchema
+  soFancyPostauthorResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Post
+      DataSourceName: !GetAtt soFancyTotableDE11F4FEDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Post-author-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Post-author-response.vm
+      ApiId: !GetAtt soFancy.ApiId
+      FieldName: author
+    DependsOn: soFancySchema
+  soFancyPostcontentResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Post
+      DataSourceName: !GetAtt soFancyTotableDE11F4FEDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Post-content-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Post-content-response.vm
+      ApiId: !GetAtt soFancy.ApiId
+      FieldName: content
+    DependsOn: soFancySchema
+  soFancyPostupsResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Post
+      DataSourceName: !GetAtt soFancyTotableDE11F4FEDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Post-ups-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Post-ups-response.vm
+      ApiId: !GetAtt soFancy.ApiId
+      FieldName: ups
+    DependsOn: soFancySchema
+  soFancyPostdownsResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Post
+      DataSourceName: !GetAtt soFancyTotableDE11F4FEDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Post-downs-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Post-downs-response.vm
+      ApiId: !GetAtt soFancy.ApiId
+      FieldName: downs
+    DependsOn: soFancySchema
+  soFancyPosttitleResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Post
+      DataSourceName: !GetAtt soFancyLocalDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Post-title-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Post-title-response.vm
+      ApiId: !GetAtt soFancy.ApiId
+      FieldName: title
+    DependsOn: soFancySchema
+  soFancyPosturlResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      TypeName: Post
+      DataSourceName: !GetAtt soFancyLocalDataSource.Name
+      RequestMappingTemplateS3Location: graphql58E2566/Post-url-request.vm
+      ResponseMappingTemplateS3Location: graphql58E2566/Post-url-response.vm
+      ApiId: !GetAtt soFancy.ApiId
+      FieldName: url
+    DependsOn: soFancySchema
+  TableOfOwnage:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      TableName: !Sub ${AWS::StackName}-TableOfOwnage
+    Metadata:
+      StackeryName: dynamo-iiiiite
+  GatewayToHell:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub
+        - ${ResourceName} From Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName}
+        - ResourceName: myApi
+      StageName: !Ref StackeryEnvironmentAPIGatewayStageName
+      DefinitionBody:
+        swagger: '2.0'
+        info: {}
+        paths:
+          /:
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${function3A959F50.Arn}/invocations
+              responses: {}
+            put:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${putTheThings.Arn}/invocations
+              responses: {}
+      EndpointConfiguration: REGIONAL
+    Metadata:
+      StackeryName: myApi
+  iQueueYou:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${AWS::StackName}-iQueueYou
+      KmsMasterKeyId: alias/aws/sqs
+    Metadata:
+      StackeryName: iNameUQ
 Parameters:
   StackeryStackTagName:
     Type: String
