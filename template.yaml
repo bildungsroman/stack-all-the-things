@@ -73,91 +73,6 @@ Resources:
           - !Ref VirtualRealityPrivateSubnet2
     Metadata:
       StackeryName: getTheThings
-  dockerTask2A5C09C4:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      ContainerDefinitions:
-        - Image: hello-world
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref dockerTask2A5C09C4LogGroup
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: hello-world
-          Name: 0
-          Environment:
-            - Name: FUNCTION_NAME
-              Value: !Ref funkyFunction
-            - Name: FUNCTION_ARN
-              Value: !GetAtt funkyFunction.Arn
-      Cpu: 1024
-      ExecutionRoleArn: !GetAtt dockerTask2A5C09C4ExecutionRole.Arn
-      Memory: 2048
-      NetworkMode: awsvpc
-      RequiresCompatibilities:
-        - FARGATE
-      TaskRoleArn: !GetAtt dockerTask2A5C09C4TaskRole.Arn
-      Volumes: []
-    DependsOn: dockerTask2A5C09C4LogGroup
-    Metadata:
-      StackeryName: downWithContainers
-      StackeryVirtualNetworkData:
-        SubnetIds:
-          - !Ref VirtualRealityPrivateSubnet1
-          - !Ref VirtualRealityPrivateSubnet2
-  dockerTask2A5C09C4LogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /stackery/task/${AWS::StackName}-dockerTask2A5C09C4/hello-world
-  dockerTask2A5C09C4ExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${AWS::StackName}-DockerTaskExecutionRole
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          Effect: Allow
-          Principal:
-            Service: ecs-tasks.amazonaws.com
-          Action: sts:AssumeRole
-      Policies:
-        - PolicyName: DownloadDockerImagesFromECR
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: !Sub arn:aws:logs:*:*:log-group:/stackery/task/${AWS::StackName}-*
-              - Effect: Allow
-                Action:
-                  - ecr:GetAuthorizationToken
-                  - ecr:BatchCheckLayerAvailability
-                  - ecr:GetDownloadUrlForLayer
-                  - ecr:BatchGetImage
-                Resource: '*'
-  dockerTask2A5C09C4TaskRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${AWS::StackName}-DockerTaskTaskRole
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          Effect: Allow
-          Principal:
-            Service: ecs-tasks.amazonaws.com
-          Action: sts:AssumeRole
-      Policies:
-        - PolicyName: AccessfunkyFunction
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - lambda:InvokeFunction
-                Resource:
-                  - !GetAtt funkyFunction.Arn
   putTheThings:
     Type: AWS::Serverless::Function
     Properties:
@@ -239,19 +154,19 @@ Resources:
                 - ecs:DescribeTasks
                 - ecs:StopTask
               Resource:
-                - !Ref dockerTask2A5C09C4
+                - !Ref dockerTask
                 - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task/*
         - Statement:
             - Effect: Allow
               Action:
                 - iam:PassRole
               Resource:
-                - !GetAtt dockerTask2A5C09C4ExecutionRole.Arn
-                - !GetAtt dockerTask2A5C09C4TaskRole.Arn
+                - !GetAtt dockerTaskExecutionRole.Arn
+                - !GetAtt dockerTaskTaskRole.Arn
         - AWSLambdaENIManagementAccess
       Environment:
         Variables:
-          DOCKER_TASK_ARN: !Ref dockerTask2A5C09C4
+          DOCKER_TASK_ARN: !Ref dockerTask
           DOCKER_TASK_SUBNETS: !Join
             - ','
             - - !If
@@ -1134,6 +1049,91 @@ Resources:
       KmsMasterKeyId: alias/aws/sqs
     Metadata:
       StackeryName: iNameUQ
+  dockerTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+        - Image: hello-world
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref dockerTaskLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: logs
+          Name: 0
+          Environment:
+            - Name: FUNCTION_NAME
+              Value: !Ref funkyFunction
+            - Name: FUNCTION_ARN
+              Value: !GetAtt funkyFunction.Arn
+      Cpu: 1024
+      ExecutionRoleArn: !GetAtt dockerTaskExecutionRole.Arn
+      Memory: 2048
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn: !GetAtt dockerTaskTaskRole.Arn
+      Volumes: []
+    DependsOn: dockerTaskLogGroup
+    Metadata:
+      StackeryName: downWithContainers
+      StackeryVirtualNetworkData:
+        SubnetIds:
+          - !Ref VirtualRealityPrivateSubnet1
+          - !Ref VirtualRealityPrivateSubnet2
+  dockerTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-DockerTaskExecutionRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+        - PolicyName: DownloadDockerImagesFromECR
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub arn:aws:logs:*:*:log-group:/stackery/task/${AWS::StackName}-*
+              - Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchGetImage
+                Resource: '*'
+  dockerTaskTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-DockerTaskTaskRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AccessfunkyFunction
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !GetAtt funkyFunction.Arn
+  dockerTaskLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /stackery/task/${AWS::StackName}-dockerTask/logs
 Parameters:
   StackeryStackTagName:
     Type: String
