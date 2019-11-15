@@ -763,6 +763,13 @@ Resources:
       Tracing: Active
       Policies:
         - AWSXrayWriteOnlyAccess
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt iQueueYou.QueueName
+      Environment:
+        Variables:
+          QUEUE_NAME: !GetAtt iQueueYou.QueueName
+          QUEUE_ARN: !GetAtt iQueueYou.Arn
+          QUEUE_URL: !Ref iQueueYou
     Metadata:
       StackeryName: logTheEroors
   myCdnOriginAccessIdentity:
